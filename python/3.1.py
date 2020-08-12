@@ -6,7 +6,7 @@ df=pd.read_csv(f)
 bins=[0,1,2,3,4,5]
 a=pd.cut(df["rating"],bins).value_counts()
 #c=list(a)
-#print(a)
+print(a)
 #print(c)
 
 #第二问
