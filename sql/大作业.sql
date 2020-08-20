@@ -93,22 +93,40 @@ lines terminated by '\r\n'
 (movieid, imdbid, tmbdid);
 
 *******************************************
---一共有多少不同的用户
+--1.一共有多少不同的用户
 select count(distinct tag.userId) from tag
 union
 select count(distinct rating.userId) from rating
 
---一共有多少不同的电影
+--2.一共有多少不同的电影
 select count(distinct movie.title) from movie
 
---一共有多少不同的电影种类
+--3.一共有多少不同的电影种类
 select count(distinct movie.genres) from movie
 
 --4.一共有多少电影没有外部链接
 select count(distinct link.moviedid) from link 
  where link.imdbid is null  
+
 --5.2018年一共有多少人进行过电影评分
 select count(distinct rating.userid) from rating 
  where t.timestamp >= TIMESTAMPDIFF(SECOND, '1970-01-01 00:00:00','2018-01-01 00:00:00')
             and t.timestamp < TIMESTAMPDIFF(SECOND, '1970-01-01 00:00:00','2019-01-01 00:00:00')
+
+--6.2018年评分5分以上的电影及其对应的标签
+select t1.movieid, t1.rating, t2.tag
+from(select  rating.movieid,  avg(rating.rating)   from rating 
+         where rating.timestamp>=TIMESTAMPDIFF(SECOND, '1970-01-01 00:00:00','2018-01-01 00:00:00')
+         and rating.timestamp<TIMESTAMPDIFF(SECOND, '1970-01-01 00:00:00','2019-01-01 00:00:00')
+         group by rating.movieid) t1
+left join
+(select t.movieid as movieid, group_concat(distinct tag separator '|' ) from tag 
+where tag.timestamp >= TIMESTAMPDIFF(SECOND, '1970-01-01 00:00:00','2018-01-01 00:00:00')
+and tag.timestamp < TIMESTAMPDIFF(SECOND, '1970-01-01 00:00:00','2019-01-01 00:00:00')
+group by t.movieid) t2
+on t1.movieid = t2.movieid
+where t1.rating >= 5
+order by t1.rating desc, t1.movieid
+
+
 
